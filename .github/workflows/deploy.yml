@@ -12,6 +12,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: true
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -26,16 +28,23 @@ jobs:
         run: npm run build
       
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-      
+          publish_branch: gh-pages
+          commit_message: 'Deploy to GitHub Pages'
+          
       - name: Deploy PR Preview
-        uses: rossjrw/pr-preview-action@v1
         if: github.event_name == 'pull_request'
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          source-dir: ./dist
-          preview-branch: gh-pages
-          umbrella-dir: pr-preview
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          commit_message: 'Deploy PR preview'
+          force_orphan: true
+          keep_history: false
+          base_branch: ${{ github.head_ref }}
+          target_branch: ${{ github.head_ref }}-preview
