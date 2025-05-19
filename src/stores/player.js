@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import spotifyService from '../services/spotify'
+import youtubeService from '../services/youtube'
+import audioLibrary from '../services/audioLibrary'
 
 export const usePlayerStore = defineStore('player', {
   state: () => ({
@@ -11,7 +13,9 @@ export const usePlayerStore = defineStore('player', {
     shuffle: false,
     currentPlaylist: null,
     loading: false,
-    error: null
+    error: null,
+    source: 'local', // 'spotify', 'youtube', or 'local'
+    youtubeVideoId: null
   }),
   
   getters: {
@@ -26,6 +30,8 @@ export const usePlayerStore = defineStore('player', {
     async loadPlaylist(playlistId) {
       this.loading = true;
       this.error = null;
+      this.source = 'spotify';
+      this.youtubeVideoId = null;
       
       try {
         const playlist = await spotifyService.getPlaylistById(playlistId);
@@ -40,6 +46,113 @@ export const usePlayerStore = defineStore('player', {
       } catch (err) {
         this.error = 'Failed to load playlist: ' + err.message;
         console.error(err);
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    // Load a local audio track
+    loadLocalTrack(trackId) {
+      this.loading = true;
+      this.error = null;
+      
+      try {
+        const track = audioLibrary.getTrackById(trackId);
+        
+        if (!track) {
+          throw new Error('Track not found');
+        }
+        
+        this.currentTrack = track;
+        this.source = 'local';
+        this.youtubeVideoId = null;
+        this.isPlaying = true;
+        
+        // Clear the queue since we're playing a single track
+        this.queue = [];
+        this.currentPlaylist = null;
+        
+        return true;
+      } catch (err) {
+        this.error = 'Failed to load track: ' + err.message;
+        console.error(err);
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    // Load all local tracks
+    loadLocalTracks() {
+      this.loading = true;
+      this.error = null;
+      
+      try {
+        const tracks = audioLibrary.getAllTracks();
+        
+        if (tracks.length === 0) {
+          throw new Error('No tracks found');
+        }
+        
+        this.currentPlaylist = {
+          id: 'local-tracks',
+          name: 'Local Tracks',
+          description: 'All available local audio tracks',
+          tracks: [...tracks]
+        };
+        
+        this.queue = [...tracks.slice(1)]; // All tracks except the first one
+        this.currentTrack = tracks[0]; // Set the first track as current
+        this.source = 'local';
+        this.youtubeVideoId = null;
+        
+        return true;
+      } catch (err) {
+        this.error = 'Failed to load tracks: ' + err.message;
+        console.error(err);
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    async loadYoutubeVideo(url) {
+      this.loading = true;
+      this.error = null;
+      
+      try {
+        const result = await youtubeService.processYouTubeUrl(url);
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to process YouTube URL');
+        }
+        
+        const videoData = result.data;
+        
+        // Create a track object from YouTube data
+        const track = {
+          id: 'yt-' + videoData.videoId,
+          title: videoData.title,
+          artist: videoData.artist,
+          album: videoData.album,
+          duration: videoData.duration,
+          imageUrl: videoData.thumbnailUrl
+        };
+        
+        this.currentTrack = track;
+        this.source = 'youtube';
+        this.youtubeVideoId = videoData.videoId;
+        this.isPlaying = true;
+        
+        // Clear the queue since we're playing a single YouTube video
+        this.queue = [];
+        this.currentPlaylist = null;
+        
+        return true;
+      } catch (err) {
+        this.error = 'Failed to load YouTube video: ' + err.message;
+        console.error(err);
+        return false;
       } finally {
         this.loading = false;
       }
