@@ -1,0 +1,43 @@
+{
+  "name": "music-player",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dialpad/dialtone": "^9.109.0-rebrand-2025-beta.1",
+    "@dialpad/dialtone-icons": "^4.34.6",
+    "@dialpad/postcss-responsive-variations": "^1.1.5",
+    "@tiptap/core": "^2.11.7",
+    "@tiptap/extension-text-style": "^2.11.7",
+    "@tiptap/pm": "^2.11.7",
+    "@tiptap/vue-3": "^2.11.7",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "date-fns": "^4.1.0",
+    "overlayscrollbars": "^2.11.1",
+    "pinia": "^3.0.2",
+    "pinia-plugin-persistedstate": "^4.2.0",
+    "vite": "^6.3.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^5.0.8",
+    "@vue/cli-plugin-eslint": "^5.0.8",
+    "@vue/cli-plugin-vuex": "^5.0.8",
+    "@vue/cli-service": "^5.0.8",
+    "eslint": "^8.57.1",
+    "less": "^4.3.0",
+    "less-loader": "^12.2.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}
